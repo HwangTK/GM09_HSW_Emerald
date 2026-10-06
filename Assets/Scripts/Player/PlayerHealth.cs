@@ -1,0 +1,119 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class PlayerHealth : MonoBehaviour
+{
+    [Header("플레이어 체력")]
+    [SerializeField] private int _playerHP;
+
+    [SerializeField] private Slider _hpSlider;
+
+    [SerializeField] private TMP_Text _hpText;
+
+    [SerializeField] private int _maxHp = 100;
+
+    [SerializeField] private int _healthRegen = 5;
+    [SerializeField] private float _regenTimer = 10f;
+
+    [Header("피격사운드")]
+    [SerializeField] private AudioSource _audioSource;
+
+
+    [Header("게임오버패널")]
+    [SerializeField] private GameObject _gameOverPanel;
+
+    private float _timer = 0f;
+
+
+
+
+    private void Start()
+    {
+        _playerHP = _maxHp;
+
+        _hpSlider.maxValue = _maxHp;
+        _hpSlider.value = _playerHP;
+
+        _hpText.text = _playerHP + " / " + _maxHp;
+    }
+
+    private void Update()
+    {
+        HealthRegen();
+    }
+    public void PlayerHit(int damage)
+    {
+        Debug.Log("플레이어 맞음");
+        _playerHP -= damage;
+        _audioSource.Play();
+
+        if ( _playerHP <= 0)
+        {
+            _playerHP = 0;
+            Debug.Log("플레이어사망");
+
+            _gameOverPanel.SetActive(true);
+            Time.timeScale = 0f;
+        }
+
+        _hpSlider.value = _playerHP;
+        _hpText.text = _playerHP + " / " + _maxHp;
+
+    }
+
+    public void AddMaxHp(int amount)
+    {
+        _maxHp += amount;
+        _playerHP += amount;
+
+        _hpSlider.maxValue = _maxHp;
+        _hpSlider.value = _playerHP;
+        _hpText.text = _playerHP + " / " + _maxHp;
+    }
+
+
+    private void HealthRegen()
+    {
+        if (_playerHP < _maxHp)
+        {
+            _timer += Time.deltaTime;
+
+            if (_timer >= _regenTimer)
+            {
+                _playerHP += _healthRegen;
+                _timer = 0f;
+
+                if (_playerHP >= _maxHp)
+                {
+                    _playerHP = _maxHp;
+                }
+
+                _hpSlider.value = _playerHP;
+                _hpText.text = _playerHP + " / " + _maxHp;
+            }
+        }
+    }
+
+
+    public void AddHealthRegen(int amount)
+    {
+        _healthRegen += amount;
+    }
+
+    public void AddHealthRegenTime(float amount)
+    {
+        _regenTimer -= amount;
+    }
+
+    public void Heal(int amount)
+    {
+        _playerHP += amount;
+        if (_playerHP >= _maxHp)
+        {
+            _playerHP = _maxHp;
+        }
+    }
+}

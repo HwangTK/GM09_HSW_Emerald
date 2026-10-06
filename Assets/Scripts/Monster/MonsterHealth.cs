@@ -1,0 +1,88 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MonsterHealth : MonoBehaviour
+{
+    [Header("몬스터 HP")]
+    [SerializeField] private float _hp;
+
+    [Header("몬스터 렌더러")]
+    [SerializeField] private Renderer _renderer;
+
+    [Header("피격색상")]
+    [SerializeField] private Color _hitColor = Color.red;
+
+    [Header("깜빡거리는 시간")]
+    [SerializeField] private float _hitTime = 0.2f;
+
+    [Header("드랍 아이템")]
+    [SerializeField] private GameObject[] _dropItems;
+
+    [Header("드랍 확률")]
+    [SerializeField] private float[] _dropPercent;
+
+
+
+    private Color _originColor;
+
+    [SerializeField] private Animator _animator;
+    [SerializeField] private MonsterBehaviour _monsterBehaviour;
+
+    [Header("피격사운드")]
+    [SerializeField] private AudioSource _audioSource;
+    [Header("사망사운드")]
+    [SerializeField] private AudioClip _deathSound;
+
+
+    private void Start()
+    {
+        _renderer = GetComponentInChildren<Renderer>();
+        _originColor = _renderer.material.color;
+
+    }
+
+
+    public void MonsterHit(int damage)
+    {
+        _audioSource.Play();
+        _hp -= damage;
+        StartCoroutine(HitEffect());
+
+        if (!_monsterBehaviour.IsAttacking)
+        {
+            _monsterBehaviour.HitStart();
+            _animator.SetTrigger("Hit");
+        }
+
+
+        if ( _hp <= 0)
+        {
+            for (int i = 0; i < _dropItems.Length; i++)
+            {
+                if (Random.value <= _dropPercent[i])
+                {
+                    Instantiate(_dropItems[i], transform.position, transform.rotation);
+                }
+            }
+            AudioSource.PlayClipAtPoint(_deathSound, transform.position);
+
+            Destroy(gameObject);
+        }
+
+
+    }
+
+    public IEnumerator HitEffect()
+    {
+        _renderer.material.color = _hitColor;
+
+        yield return new WaitForSeconds(_hitTime);
+
+        _renderer.material.color = _originColor;
+    }
+
+
+
+
+}
